@@ -69,6 +69,7 @@ public class Main {
         System.out.println(longestWord);
 
         System.out.println("Задача 6");
+
         String spaceWord = "dwdw dwdw ff bb ff bb lk oe gr";
 
         Map<String, Integer> answer = Arrays.stream(spaceWord.split("\\s+"))
@@ -82,9 +83,9 @@ public class Main {
 
         System.out.println("Задача 7");
 
-        String[] stringLine = {"dwdw", "dwdw", "dcd", "qqe", "aaa", "vfdvf"};
+        List<String> stringLine = List.of("dwdw", "dwdw", "dcd", "qqe", "aaa", "vfdvf");
 
-        Arrays.stream(stringLine)
+        stringLine.stream()
                 .sorted(Comparator.comparingInt(String::length)
                         .thenComparing(word -> word))
                 .forEach(System.out::println);
