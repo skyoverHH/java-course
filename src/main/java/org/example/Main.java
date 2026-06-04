@@ -41,14 +41,14 @@ public class Main {
         List<Employee> employeeList = List.of(firstWorker, secondWorker, thirdWorker, fourthWorker);
 
         System.out.println("Задача 3");
-        List<String> top3EngineerNames = employeeList.stream()
+        List<String> engineerNames = employeeList.stream()
                 .filter(employee -> "Engineer".equals(employee.getJobTitle()))
                 .sorted(Comparator.comparingInt(Employee::getAge).reversed())
                 .limit(3)
                 .map(Employee::getFirstName)
                 .toList();
 
-        System.out.println(top3EngineerNames);
+        System.out.println(engineerNames);
 
         System.out.println("Задача 4");
         Double avgAge = employeeList.stream()
