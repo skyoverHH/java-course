@@ -41,10 +41,14 @@ public class Main {
         List<Employee> employeeList = List.of(firstWorker, secondWorker, thirdWorker, fourthWorker);
 
         System.out.println("Задача 3");
-        employeeList.stream()
+        List<String> top3EngineerNames = employeeList.stream()
                 .filter(employee -> "Engineer".equals(employee.getJobTitle()))
                 .sorted(Comparator.comparingInt(Employee::getAge).reversed())
-                .forEach(person -> System.out.println(person.getAge()));
+                .limit(3)
+                .map(Employee::getFirstName)
+                .toList();
+
+        System.out.println(top3EngineerNames);
 
         System.out.println("Задача 4");
         Double avgAge = employeeList.stream()
@@ -58,12 +62,11 @@ public class Main {
         System.out.println("Задача 5");
         List<String> maxLength= List.of("sadasdasdasdasdasdadsdasd", "dwdw", "dw");
 
-        int maxlng = maxLength.stream()
-                .mapToInt(String::length)
-                .max()
-                .orElse(0);
+        String longestWord = maxLength.stream()
+                .max(Comparator.comparingInt(String::length))
+                .orElse("");
 
-        System.out.println(maxlng);
+        System.out.println(longestWord);
 
         System.out.println("Задача 6");
         String spaceWord = "dwdw dwdw ff bb ff bb lk oe gr";
