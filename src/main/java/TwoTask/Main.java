@@ -1,6 +1,6 @@
-package org.example;
+package TwoTask;
 
-import Example.Employee;
+import ClassForTwoTask.Employee;
 
 import java.util.*;
 import java.util.function.Function;
@@ -45,7 +45,7 @@ public class Main {
                 .filter(employee -> "Engineer".equals(employee.getJobTitle()))
                 .sorted(Comparator.comparingInt(Employee::getAge).reversed())
                 .limit(3)
-                .map(Employee::getFirstName)
+                .map(Employee::getSecondName)
                 .toList();
 
         System.out.println(engineerNames);

@@ -1,12 +1,12 @@
-package Example;
+package ClassForTwoTask;
 
 public class Employee {
-    private final String FirstName;
+    private final String SecondName;
     private final Integer Age;
     private final String JobTitle;
 
-    public String getFirstName() {
-        return FirstName;
+    public String getSecondName() {
+        return SecondName;
     }
 
     public Integer getAge() {
@@ -17,8 +17,8 @@ public class Employee {
         return JobTitle;
     }
 
-    public Employee(String firstName, Integer age, String jobTitle) {
-        this.FirstName = firstName;
+    public Employee(String SecondName, Integer age, String jobTitle) {
+        this.SecondName = SecondName;
         this.Age = age;
         this.JobTitle = jobTitle;
     }
