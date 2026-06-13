@@ -49,7 +49,7 @@ public class MyThreadPool {
             }
 
             taskQueue.addLast(task);
-            taskQueue.notify();
+            taskQueue.notifyAll();
         }
     }
 
