@@ -1,5 +1,6 @@
 package HomeWork5.service;
 
+import HomeWork5.dto.UserDto;
 import HomeWork5.model.UserEntity;
 import HomeWork5.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,21 @@ public class UserService {
         );
     }
 
-    public UserEntity getUserById(Long id) {
+    public UserDto getUserById(Long id) {
         return userRepository.findById(id)
+                .map(this::toDto)
                 .orElseThrow(() -> new NoSuchElementException("Не найдена запись User c id = " + id));
     }
 
-    public List<UserEntity> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userRepository
+                .findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    private UserDto toDto(UserEntity userEntity) {
+        return new UserDto(userEntity.getId(), userEntity.getUsername());
     }
 }
