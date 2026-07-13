@@ -1,0 +1,14 @@
+server:
+  servlet:
+    context-path: "/payment"
+  port: 8081
+
+integrations:
+  clients:
+    product-client:
+      url: "http://localhost:8080/"
+      connect-timeout: 5s
+      read-timeout: 10s
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: debug
