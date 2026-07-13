@@ -49,26 +49,6 @@ public class LimitService {
     }
 
     @Transactional
-    public void revertPaymentRequest(UUID paymentId) {
-
-        transactionRepository.findByOperationId(paymentId)
-                .ifPresentOrElse(transactionEntity -> {
-                            LimitEntity revertingLimit = getLimitByUserIdOrCreate(transactionEntity.getUserId());
-                            revertingLimit.setLimitAmount(
-                                    revertingLimit
-                                            .getLimitAmount()
-                                            .add(transactionEntity.getAmount()));
-                            limitRepository.save(revertingLimit);
-                            transactionRepository.delete(transactionEntity);
-                            log.info("Выполнен возврат средств, платёж с id = {} отменён", paymentId);
-                        },
-                        () -> {
-                            throw new NotFoundException("Не найден платёж с id = " + paymentId);
-                        });
-
-    }
-
-    @Transactional
     public LimitDto decreaseLimit(LimitOperationRequestDto request) {
         LimitEntity limitEntity =
                 getLimitByUserIdOrCreate(request.userId());

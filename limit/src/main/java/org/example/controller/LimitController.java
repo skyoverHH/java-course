@@ -13,10 +13,6 @@ public class LimitController {
 
     private final LimitService limitService;
 
-    public LimitController(LimitService limitService) {
-        this.limitService = limitService;
-    }
-
     @GetMapping("/user/{userId}")
     public LimitDto getUserLimit(@PathVariable Long userId) {
         return limitService.getLimitByUserId(userId);
