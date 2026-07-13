@@ -23,8 +23,8 @@ public class TransactionEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "payment_id", nullable = false, unique = true)
-    private UUID paymentId;
+    @Column(name = "operation_id", nullable = false, unique = true)
+    private UUID operationId;
 
     @Column(name = "amount",  nullable = false)
     private BigDecimal amount;

@@ -4,11 +4,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.LimitDto;
-import org.example.dto.PaymentRequestDto;
-import org.example.dto.PaymentResponseDto;
+import org.example.dto.LimitOperationRequestDto;
 import org.example.exception.LimitReachedException;
 import org.example.exception.NotFoundException;
-import org.example.exception.PaymentServiceException;
 import org.example.mapper.LimitMapper;
 import org.example.model.LimitEntity;
 import org.example.model.TransactionEntity;
@@ -27,7 +25,6 @@ import java.util.UUID;
 public class LimitService {
     private final LimitRepository limitRepository;
     private final TransactionRepository transactionRepository;
-    private final PaymentService paymentService;
     private final LimitMapper limitMapper;
 
     @Value("${limits.standard}")
@@ -36,28 +33,6 @@ public class LimitService {
     @Transactional
     public LimitDto getLimitByUserId(Long userId) {
         return limitMapper.limitEntityToLimitDto(getLimitByUserIdOrCreate(userId));
-    }
-
-    @Transactional
-    public LimitDto executePaymentRequest(PaymentRequestDto paymentRequestDto) {
-        LimitEntity limitEntity = getLimitByUserIdOrCreate(paymentRequestDto.userId());
-        if (limitEntity.getLimitAmount().compareTo(paymentRequestDto.amount()) < 0) {
-            throw new LimitReachedException("Достигнут лимит средств у пользователя с id = " + paymentRequestDto.userId());
-        }
-        PaymentResponseDto paymentResponseDto = paymentService.executePayment(paymentRequestDto);
-        if (paymentResponseDto.isSucceed()) {
-            limitEntity.setLimitAmount(limitEntity.getLimitAmount().subtract(paymentRequestDto.amount()));
-            limitRepository.save(limitEntity);
-            log.info("Лимит пользователя с id = {} уменьшен на сумму {}", paymentRequestDto.userId(), limitEntity.getLimitAmount());
-            TransactionEntity transactionEntity = new TransactionEntity();
-            transactionEntity.setPaymentId(paymentResponseDto.paymentId());
-            transactionEntity.setAmount(paymentRequestDto.amount());
-            transactionEntity.setUserId(limitEntity.getUserId());
-            transactionRepository.save(transactionEntity);
-            return limitMapper.limitEntityToLimitDto(limitEntity);
-        } else {
-            throw new PaymentServiceException(paymentResponseDto.message());
-        }
     }
 
     private LimitEntity getLimitByUserIdOrCreate(Long userId) {
@@ -76,7 +51,7 @@ public class LimitService {
     @Transactional
     public void revertPaymentRequest(UUID paymentId) {
 
-        transactionRepository.findByPaymentId(paymentId)
+        transactionRepository.findByOperationId(paymentId)
                 .ifPresentOrElse(transactionEntity -> {
                             LimitEntity revertingLimit = getLimitByUserIdOrCreate(transactionEntity.getUserId());
                             revertingLimit.setLimitAmount(
@@ -91,5 +66,73 @@ public class LimitService {
                             throw new NotFoundException("Не найден платёж с id = " + paymentId);
                         });
 
+    }
+
+    @Transactional
+    public LimitDto decreaseLimit(LimitOperationRequestDto request) {
+        LimitEntity limitEntity =
+                getLimitByUserIdOrCreate(request.userId());
+
+        if (limitEntity.getLimitAmount()
+                .compareTo(request.amount()) < 0) {
+
+            throw new LimitReachedException(
+                    "Недостаточно доступного лимита у пользователя с id = "
+                            + request.userId()
+            );
+        }
+
+        limitEntity.setLimitAmount(
+                limitEntity.getLimitAmount()
+                        .subtract(request.amount())
+        );
+
+        TransactionEntity transactionEntity =
+                new TransactionEntity();
+
+        transactionEntity.setOperationId(request.operationId());
+        transactionEntity.setAmount(request.amount());
+        transactionEntity.setUserId(request.userId());
+
+        limitRepository.save(limitEntity);
+        transactionRepository.save(transactionEntity);
+
+        log.info(
+                "Лимит пользователя с id = {} уменьшен на {}",
+                request.userId(),
+                request.amount()
+        );
+
+        return limitMapper.limitEntityToLimitDto(limitEntity);
+    }
+
+    @Transactional
+    public LimitDto revertLimit(UUID operationId) {
+        TransactionEntity transaction =
+                transactionRepository.findByOperationId(operationId)
+                        .orElseThrow(() ->
+                                new NotFoundException(
+                                        "Не найдена операция с id = "
+                                                + operationId
+                                )
+                        );
+
+        LimitEntity limit =
+                getLimitByUserIdOrCreate(transaction.getUserId());
+
+        limit.setLimitAmount(
+                limit.getLimitAmount()
+                        .add(transaction.getAmount())
+        );
+
+        limitRepository.save(limit);
+        transactionRepository.delete(transaction);
+
+        log.info(
+                "Лимит возвращён по операции с id = {}",
+                operationId
+        );
+
+        return limitMapper.limitEntityToLimitDto(limit);
     }
 }

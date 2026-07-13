@@ -1,32 +1,38 @@
-package org.example.controller;
-
 import lombok.RequiredArgsConstructor;
 import org.example.dto.LimitDto;
-import org.example.dto.PaymentRequestDto;
+import org.example.dto.LimitOperationRequestDto;
 import org.example.service.LimitService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "limits/v1")
+@RequestMapping("/limits/v1")
 @RequiredArgsConstructor
 public class LimitController {
+
     private final LimitService limitService;
 
+    public LimitController(LimitService limitService) {
+        this.limitService = limitService;
+    }
+
     @GetMapping("/user/{userId}")
-    public LimitDto getUserLimit(@PathVariable("userId") Long userId) {
+    public LimitDto getUserLimit(@PathVariable Long userId) {
         return limitService.getLimitByUserId(userId);
     }
 
-    @PostMapping("/payment")
-    public LimitDto performPaymentRequest(@RequestBody PaymentRequestDto paymentRequest) {
-        return limitService.executePaymentRequest(paymentRequest);
+    @PostMapping("/decrease")
+    public LimitDto decreaseLimit(
+            @RequestBody LimitOperationRequestDto request
+    ) {
+        return limitService.decreaseLimit(request);
     }
 
-    @PostMapping("/payment/revert/{paymentId}")
-    public void revertPaymentRequest(@PathVariable("paymentId") UUID paymentId) {
-        limitService.revertPaymentRequest(paymentId);
+    @PostMapping("/revert/{operationId}")
+    public LimitDto revertLimit(
+            @PathVariable UUID operationId
+    ) {
+        return limitService.revertLimit(operationId);
     }
 }
-
